@@ -10,17 +10,19 @@ public class Main : Node {
 
   private Random _random = new Random();
 
+  private float _difficultyModified = 1.25f;
+
   public override void _Ready() {
     GetNode<Player>("Player").Connect("Hit", this, nameof(GameOver));
     GetNode<Timer>("StartTimer").Connect("timeout", this, nameof(OnStartTimerTimeout));
-    GetNode<Timer>("MobTimer").Connect("timeout", this, nameof(OnStartTimerTimeout));
     GetNode<Timer>("MobTimer").Connect("timeout", this, nameof(OnMobTimerTimeout));
     GetNode<Timer>("ScoreTimer").Connect("timeout", this, nameof(OnScoreTimerTimeout));
-
-    NewGame();
+    GetNode<Timer>("DifficultyTimer").Connect("timeout", this, nameof(OnDifficultyTimerTimeout));
+    GetNode<HUD>("HUD").Connect("StartGame", this, nameof(NewGame));
   }
 
   public void NewGame() {
+    GetNode<AudioStreamPlayer>("Music").Play();
     _score = 0;
 
     Player player = GetNode<Player>("Player");
@@ -28,26 +30,36 @@ public class Main : Node {
     player.Start(startposition.Position);
 
     GetNode<Timer>("StartTimer").Start();
+
+    HUD hud = GetNode<HUD>("HUD");
+    hud.UpdateScore(_score);
+    hud.ShowMessage("Get Ready!");
   }
 
   public void GameOver() {
+    GetNode<AudioStreamPlayer>("Music").Stop();
     GetNode<Timer>("MobTimer").Stop();
     GetNode<Timer>("ScoreTimer").Stop();
+    GetNode<HUD>("HUD").ShowGameOver();
+    GetNode<AudioStreamPlayer>("DeathSound").Play();
   }
 
   public void OnStartTimerTimeout() {
     GetNode<Timer>("MobTimer").Start();
     GetNode<Timer>("ScoreTimer").Start();
+    GetNode<Timer>("DifficultyTimer").Start();
   }
 
   public void OnScoreTimerTimeout() {
     _score++;
+    GetNode<HUD>("HUD").UpdateScore(_score);
   }
 
   public void OnMobTimerTimeout() {
     /* Choose a random location on Path2D */
     PathFollow2D mobSpawnLocation = GetNode<PathFollow2D>("MobPath/MobSpawnLocation");
-    mobSpawnLocation.SetOffset(_random.Next());
+    float a = _random.Next();
+    mobSpawnLocation.SetOffset(a);
 
     /* Create a Mob instance and add it to the scene */
     RigidBody2D mob = (RigidBody2D)Mob.Instance();
@@ -65,6 +77,14 @@ public class Main : Node {
 
     /* Choose velocity */
     mob.SetLinearVelocity(new Vector2(RandRange(150f, 250f), 0).Rotated(direction));
+
+    GetNode<HUD>("HUD").Connect("StartGame", mob, "OnStartGame");
+  }
+
+  public void OnDifficultyTimerTimeout() {
+    Timer mobTimer = GetNode<Timer>("MobTimer");
+    float timeOut = mobTimer.WaitTime;
+    mobTimer.SetWaitTime(timeOut / _difficultyModified);
   }
 
   private float RandRange(float min, float max) {
