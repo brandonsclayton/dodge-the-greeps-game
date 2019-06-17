@@ -1,12 +1,25 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://main/Main.cs" type="Script" id=1]
 [ext_resource path="res://mob/Mob.tscn" type="PackedScene" id=2]
 [ext_resource path="res://player/Player.tscn" type="PackedScene" id=3]
+[ext_resource path="res://hud/HUD.tscn" type="PackedScene" id=4]
+[ext_resource path="res://dodge-assets/art/House In a Forest Loop.ogg" type="AudioStream" id=5]
+[ext_resource path="res://dodge-assets/art/gameover.wav" type="AudioStream" id=6]
+
+[sub_resource type="Curve2D" id=1]
+_data = {
+"points": PoolVector2Array( 0, 0, 0, 0, -0.500061, -0.149872, 0, 0, 0, 0, 482.5, 4.35013, 0, 0, 0, 0, 482.5, 725.85, 0, 0, 0, 0, 2.49994, 725.85, 0, 0, 0, 0, -0.500061, -0.149872 )
+}
 
 [node name="Main" type="Node"]
 script = ExtResource( 1 )
 Mob = ExtResource( 2 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+margin_right = 484.0
+margin_bottom = 724.0
+color = Color( 0.145098, 0.235294, 0.54902, 1 )
 
 [node name="Player" parent="." instance=ExtResource( 3 )]
 
@@ -19,11 +32,23 @@ wait_time = 0.5
 wait_time = 2.0
 one_shot = true
 
+[node name="DifficultyTimer" type="Timer" parent="."]
+wait_time = 5.0
+
 [node name="StartPosition" type="Position2D" parent="."]
 position = Vector2( 240, 450 )
 
 [node name="MobPath" type="Path2D" parent="."]
+curve = SubResource( 1 )
 
 [node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
-position = Vector2( -1, 0.20002 )
-rotation = 0.00623692
+position = Vector2( -0.500061, -0.149872 )
+rotation = 0.0093165
+
+[node name="HUD" parent="." instance=ExtResource( 4 )]
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 5 )
+
+[node name="DeathSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )

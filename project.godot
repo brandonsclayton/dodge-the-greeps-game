@@ -16,12 +16,17 @@ _global_script_class_icons={
 [application]
 
 config/name="Dodge the Greeps"
+run/main_scene="res://main/Main.tscn"
 config/icon="res://icon.png"
 
 [display]
 
 window/size/width=480
 window/size/height=720
+
+[logging]
+
+file_logging/enable_file_logging=true
 
 [rendering]
 
