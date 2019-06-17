@@ -15,10 +15,9 @@ public class Player : Area2D {
   private Vector2 _screenSize;
 
   public override void _Ready() {
-    _screenSize =GetViewport().GetSize();
+    _screenSize = GetViewport().GetSize();
     Connect("body_entered", this, nameof(OnPlayerBodyEntered));
     Hide();
-    Start(new Vector2(0, 0));
   }
 
   public override void _Process(float delta) {
@@ -44,7 +43,7 @@ public class Player : Area2D {
 
   public void OnPlayerBodyEntered(PhysicsBody2D body) {
     Hide();
-    EmitSignal("hit");
+    EmitSignal("Hit");
     GetNode<CollisionShape2D>("CollisionShape2D").SetDeferred("disabled", true);
   }
 
