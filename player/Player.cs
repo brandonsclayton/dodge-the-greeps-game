@@ -14,6 +14,10 @@ public class Player : Area2D {
   /* The size of the game window */
   private Vector2 _screenSize;
 
+  private Vector2 _target = new Vector2();
+
+  private Vector2 _velocity = new Vector2();
+
   public override void _Ready() {
     _screenSize = GetViewport().GetSize();
     Connect("body_entered", this, nameof(OnPlayerBodyEntered));
@@ -21,22 +25,34 @@ public class Player : Area2D {
   }
 
   public override void _Process(float delta) {
-    Vector2 velocity = movePlayer();
+    if (Position.DistanceTo(_target) > 10) {
+      _velocity = (_target - Position).Normalized() * Speed;
+    } else {
+      _velocity = new Vector2();
+    }
+
     AnimatedSprite sprite = GetNode<AnimatedSprite>("AnimatedSprite");
 
-    if (velocity.Length() > 0) {
-      velocity = velocity.Normalized() * Speed;
+    if (_velocity.Length() > 0) {
+      _velocity = _velocity.Normalized() * Speed;
       sprite.Play();
     } else {
       sprite.Stop();
     }
 
-    updatePosition(velocity, delta);
-    updateAnimation(velocity, sprite);
+    Position += _velocity * delta;
+    UpdateAnimation(_velocity, sprite);
+  }
+
+  public override void _Input(InputEvent inputEvent) {
+    if (inputEvent is InputEventScreenTouch && inputEvent.IsPressed()) {
+      _target = ((InputEventScreenTouch)inputEvent).Position;
+    }
   }
 
   public void Start(Vector2 pos) {
     Position = pos;
+    _target = pos;
     Show();
     GetNode<CollisionShape2D>("CollisionShape2D").Disabled = false;
   }
@@ -47,7 +63,7 @@ public class Player : Area2D {
     GetNode<CollisionShape2D>("CollisionShape2D").SetDeferred("disabled", true);
   }
 
-  private void updateAnimation(Vector2 velocity, AnimatedSprite sprite) {
+  private void UpdateAnimation(Vector2 velocity, AnimatedSprite sprite) {
     if (velocity.x != 0) {
       sprite.Animation = "right";
       sprite.FlipH = velocity.x < 0;
@@ -58,41 +74,34 @@ public class Player : Area2D {
     }
   }
 
-  private void updatePosition(Vector2 velocity, float delta) {
-    Position += velocity * delta;
-    Position = new Vector2(
-      x: Mathf.Clamp(Position.x, 0, _screenSize.x),
-      y: Mathf.Clamp(Position.y, 0, _screenSize.y));
-  }
+  // private Vector2 MovePlayer() {
+  //   /* Players movement vector */
+  //   Vector2 velocity = new Vector2();
 
-  private Vector2 movePlayer() {
-    /* Players movement vector */
-    Vector2 velocity = new Vector2();
+  //   if (Input.IsActionPressed(Keys.Right)) {
+  //     velocity.x += 1;
+  //   }
 
-    if (Input.IsActionPressed(Keys.Right)) {
-      velocity.x += 1;
-    }
+  //   if (Input.IsActionPressed(Keys.Left)) {
+  //     velocity.x -= 1;
+  //   }
 
-    if (Input.IsActionPressed(Keys.Left)) {
-      velocity.x -= 1;
-    }
+  //   if (Input.IsActionPressed(Keys.Down)) {
+  //     velocity.y += 1;
+  //   }
 
-    if (Input.IsActionPressed(Keys.Down)) {
-      velocity.y += 1;
-    }
+  //   if (Input.IsActionPressed(Keys.Up)) {
+  //     velocity.y -= 1;
+  //   }
 
-    if (Input.IsActionPressed(Keys.Up)) {
-      velocity.y -= 1;
-    }
+  //   return velocity;
+  // }
 
-    return velocity;
-  }
-
-  static class Keys {
-    public static readonly string Up = "ui_up";
-    public static readonly string Down = "ui_down";
-    public static readonly string Right = "ui_right";
-    public static readonly string Left = "ui_left";
-  }
+  // static class Keys {
+  //   public static readonly string Up = "ui_up";
+  //   public static readonly string Down = "ui_down";
+  //   public static readonly string Right = "ui_right";
+  //   public static readonly string Left = "ui_left";
+  // }
 
 }
