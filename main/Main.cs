@@ -10,6 +10,8 @@ public class Main : Node {
 
   private Random _random = new Random();
 
+  private float _waitTime = 0.5f;
+
   private float _difficultyModified = 1.25f;
 
   public override void _Ready() {
@@ -22,6 +24,7 @@ public class Main : Node {
   }
 
   public void NewGame() {
+    GetNode<Timer>("MobTimer").SetWaitTime(_waitTime);
     GetNode<AudioStreamPlayer>("Music").Play();
     _score = 0;
 
